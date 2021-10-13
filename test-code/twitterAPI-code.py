@@ -1,50 +1,18 @@
 import tweepy
-from tweepy import OAuthHandler
-from tweepy import Stream
-import socket
-import json
 
-consumer_key    = '<Enter API Key>'
-consumer_secret = '<Enter API Key Secret>'
-access_token    = '<Enter Access Token>'
-access_secret   = '<Enter Access Token Secret>'
+twitter_api_key = "YkZvad3vXqnArsEHtfbcaedo5"
+twitter_api_secret_key = "SmHZGrW31XUHPl0B0McogZ7N7dJuPbtlxIXaTcr13XMxIyh8vt"
+twitter_access_token = "1419577272164442116-RKTNXp7ftBoOK6aGutZhEJqzLorjj5"
+twitter_access_token_secret = "oPj5SFs7SkuCU5bB5VwirKoRssPnjMTuiAVIibQcc3EbA"
 
-class TweetsListener(Stream):
+class SimpleStreamListener(tweepy.StreamListener):
+   def on_status(self, status):
+       print(status)
 
-    def __init__(self, csocket):
-        self.client_socket = csocket
-    def on_data(self, data):
-        try:
-            message = json.loads( data )
-            print( message['text'].encode('utf-8') )
-            self.client_socket.send( message['text'].encode('utf-8') )
-            return True
-        except BaseException as e:
-            print("Error on_data: %s" % str(e))
-        return True
+stream_listener = SimpleStreamListener()
 
-    def if_error(self, status):
-        print(status)
-        return True
+auth = tweepy.OAuthHandler(twitter_api_key, twitter_api_secret_key)
+auth.set_access_token(twitter_access_token, twitter_access_token_secret)
 
-def send_tweets(c_socket):
-    auth = OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_secret)
-    
-    twitter_stream = Stream(auth, TweetsListener(c_socket))
-    twitter_stream.filter(track=['data'])
-
-if __name__ == "__main__":
-    new_skt = socket.socket()         # initiate a socket object
-    host = "0.0.0.0"     # local machine address
-    port = 5555                 # specific port for your service.
-    new_skt.bind((host, port))        # Binding host and port
-
-    print("Now listening on port: %s" % str(port))
-
-    new_skt.listen(5)                 #  waiting for client connection.
-    c, addr = new_skt.accept()        # Establish connection with client. it returns first a socket object,c, and the address bound to the socket
-
-    print("Received request from: " + str(addr))
-    # and after accepting the connection, we aill sent the tweets through the socket
-    send_tweets(c)
+twitterStream = tweepy.Stream(auth, stream_listener)
+twitterStream.filter(track=['tesla'])
